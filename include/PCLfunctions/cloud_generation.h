@@ -48,6 +48,13 @@ namespace EXX {
 		    return cloud;
 		}
 
+		PointCloudT::Ptr loadCloud()
+		{
+			PointCloudT::Ptr cloud (new PointCloudT);
+			pcl::io::loadPCDFile ("/home/unnar/catkin_ws/src/exx_wall_extraction/src/clouds/single_plane.pcd", *cloud);
+			return cloud;
+		}
+
 		pcl::PolygonMesh greedyProjectionTriangulation(PointCloudT::Ptr plane)
 			{
 			    pcl::PolygonMesh triangle;
@@ -63,14 +70,14 @@ namespace EXX {
 			    pcl::GreedyProjectionTriangulation<pcl::PointXYZRGBNormal> gp3;
 
 			    // Set the maximum distance between connected points (maximum edge length)
-			    gp3.setSearchRadius (160);
+			    gp3.setSearchRadius (0.3);
 
 			    // Set typical values for the parameters
-			    gp3.setMu (1.0);
+			    gp3.setMu (2.5);
 			    gp3.setMaximumNearestNeighbors (100);
-			    gp3.setMaximumSurfaceAngle(M_PI/4); // 45 degrees
-			    gp3.setMinimumAngle(M_PI/18); // 10 degrees
-			    gp3.setMaximumAngle(2*M_PI/3); // 120 degrees
+			    gp3.setMaximumSurfaceAngle(M_PI); // 45 degrees
+			    gp3.setMinimumAngle(M_PI/4); // 10 degrees
+			    gp3.setMaximumAngle(3*M_PI/4); // 120 degrees
 			    gp3.setNormalConsistency(false);
 
 			    pcl::PolygonMesh triangles_planes;

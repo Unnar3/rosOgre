@@ -108,7 +108,8 @@ void TutorialApplication::createScene(void)
     //     // std::cout << verts[i][2] << std::endl;
     // }
 
-    // Add indexing data to the manualobject
+    // Add indexing data to the manual
+    object
     for (size_t i = 0; i < mesh.polygons.size(); i++)
     {
         // std::cout << "vertice size" << mesh.polygons[i].vertices.size() << std::endl;

@@ -62,15 +62,15 @@ void TutorialApplication::createScene(void)
     // Create the point cloud;
     PointCloudT::Ptr cloud = EXX::PCLfunctions::loadCloud();
 
-    EXX::triangulation::cloudB new_cloud;
-    new_cloud.cloud = PointCloudT::Ptr (new PointCloudT);
-    pcl::io::loadPCDFile ("/home/unnar/catkin_ws/src/exx_wall_extraction/src/clouds/single_plane.pcd", *new_cloud.cloud);
-    new_cloud.boundaryIndexLow  = 302;
-    new_cloud.boundaryIndexHigh = new_cloud.cloud->points.size()-1;
-    std::cout << "boundary Index High: " << new_cloud.boundaryIndexHigh << std::endl;
-    triangulation::triangulation tri;
-    tri.setInputCloud(new_cloud);
-    std::vector<std::vector<int> > verts = tri.triangulate();
+    // EXX::triangulation::cloudB new_cloud;
+    // new_cloud.cloud = PointCloudT::Ptr (new PointCloudT);
+    // pcl::io::loadPCDFile ("/home/unnar/catkin_ws/src/exx_wall_extraction/src/clouds/Cloud_triangle.pcd", *new_cloud.cloud);
+    // new_cloud.boundaryIndexLow  = 8;
+    // new_cloud.boundaryIndexHigh = new_cloud.cloud->points.size()-1;
+    // std::cout << "boundary Index High: " << new_cloud.boundaryIndexHigh << std::endl;
+    // triangulation::triangulation tri;
+    // tri.setInputCloud(new_cloud);
+    // std::vector<std::vector<int> > verts = tri.triangulate();
 
     pcl::PolygonMesh mesh;
     mesh = EXX::PCLfunctions::greedyProjectionTriangulation(cloud);
@@ -114,14 +114,12 @@ void TutorialApplication::createScene(void)
         // std::cout << "vertice size" << mesh.polygons[i].vertices.size() << std::endl;
         for (size_t j = 0; j < mesh.polygons[i].vertices.size(); j++)
         {
-            std::cout << "j er: " << j << std::endl;
             int index = mesh.polygons[i].vertices[j];
             manual->index(index);
         }
-        std::cout << "i er: " << i << std::endl;
-        // std::cout << mesh.polygons[i].vertices[0];
-        // std::cout << mesh.polygons[i].vertices[1];
-        // std::cout << mesh.polygons[i].vertices[2] << std::endl;
+        manual->index(mesh.polygons[i].vertices[0]);
+        manual->index(mesh.polygons[i].vertices[2]);
+        manual->index(mesh.polygons[i].vertices[1]);
     }
 
     // EXX::triangulation::triangulation tri;

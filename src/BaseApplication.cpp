@@ -191,12 +191,15 @@ void BaseApplication::loadResources(void)
 //-------------------------------------------------------------------------------------
 void BaseApplication::go(void)
 {
-#ifdef _DEBUG
+    if (path.empty()){
+        path = "";
+    }
+    #ifdef _DEBUG
     mResourcesCfg = "resources_d.cfg";
     mPluginsCfg = "plugins_d.cfg";
 #else
-    mResourcesCfg = "resources.cfg";
-    mPluginsCfg = "plugins.cfg";
+    mResourcesCfg = path + "resources.cfg";
+    mPluginsCfg = path + "plugins.cfg";
 #endif
 
     if (!setup())
@@ -206,6 +209,10 @@ void BaseApplication::go(void)
 
     // clean up
     destroyScene();
+}
+
+void BaseApplication::setConfigPath(std::string config_path){
+    path = config_path;
 }
 //-------------------------------------------------------------------------------------
 bool BaseApplication::setup(void)

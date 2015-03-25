@@ -96,10 +96,10 @@ namespace EXX {
 		    return interior_cloud;
 		}
 
-		PointCloudT::Ptr loadCloud()
+		PointCloudT::Ptr loadCloud(std::string path)
 		{
 			PointCloudT::Ptr cloud (new PointCloudT);
-			pcl::io::loadPCDFile ("/home/unnar/catkin_ws/src/exx_wall_extraction/src/clouds/Cloud_triangle.pcd", *cloud);
+			pcl::io::loadPCDFile (path, *cloud);
 			return cloud;
 		}
 

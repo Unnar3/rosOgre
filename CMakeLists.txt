@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 	message_generation
 	pcl_conversions
   	pcl_ros
+  	exx_compression
 )
 
 #add_message_files(FILES
@@ -24,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
 	DEPENDS
-	CATKIN_DEPENDS message_runtime
+	CATKIN_DEPENDS message_runtime exx_compression
 )
 
 ###################################################################
@@ -67,7 +68,7 @@ add_executable(OgreApp WIN32 ${HDRS} ${SRCS})
  
 set_target_properties(OgreApp PROPERTIES DEBUG_POSTFIX _d)
  
-target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${catkin_LIBRARIES} "/usr/lib/x86_64-linux-gnu/libboost_system.so.1.54.0" libvtkCommon.so libvtkFiltering.so libvtkGraphics.so)
+target_link_libraries(OgreApp compression ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${catkin_LIBRARIES} "/usr/lib/x86_64-linux-gnu/libboost_system.so.1.54.0" libvtkCommon.so libvtkFiltering.so libvtkGraphics.so)
  
 #file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
 #file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)

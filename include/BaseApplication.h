@@ -41,7 +41,7 @@ public:
     virtual ~BaseApplication(void);
 
     virtual void go(void);
-
+    virtual void setConfigPath(std::string path);
 protected:
     virtual bool setup();
     virtual bool configure(void);
@@ -90,6 +90,7 @@ protected:
     OIS::InputManager* mInputManager;
     OIS::Mouse*    mMouse;
     OIS::Keyboard* mKeyboard;
+    std::string path;
 };
 
 #endif // #ifndef __BaseApplication_h_

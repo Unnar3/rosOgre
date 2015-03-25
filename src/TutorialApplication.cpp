@@ -34,8 +34,6 @@ This source file is part of the
 #include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
 
 #include <boost/thread/thread.hpp>
-#include <PCLfunctions/cloud_generation.h>
-#include <triangulation/triangulation.h>
 
 using namespace EXX;
 
@@ -71,11 +69,15 @@ void TutorialApplication::createScene(void)
     EXX::compression cmprs;
     std::vector<EXX::cloudMesh> cmesh;
     cmprs.setInputCloud(baseCloud_);
+    cmprs.setVoxelLeafSize(VoxelLeafSize_);
     cmprs.setSVVoxelResolution(SVVoxelResolution_);
     cmprs.setSVSeedResolution(SVSeedResolution_);
     cmprs.setRANSACDistanceThreshold(RANSACDistanceThreshold_);
-    cmprs.triangulate();
+    cmprs.triangulatePlanes();
     cmesh = cmprs.returnCloudMesh();
+    pcl::io::savePCDFileASCII (savePath_+"cmesh0.pcd", *cmesh[0].cloud);
+    pcl::io::savePCDFileASCII (savePath_+"cmesh1.pcd", *cmesh[1].cloud);
+    pcl::io::savePCDFileASCII (savePath_+"cmesh2.pcd", *cmesh[2].cloud);
     std::cout << "Creating manual object." << std::endl;
 
     // Create manual Object from the triangulation
@@ -83,6 +85,7 @@ void TutorialApplication::createScene(void)
     Ogre::Real g;
     Ogre::Real b;
 
+    int pic = 0;
     for (std::vector<EXX::cloudMesh>::iterator ite = cmesh.begin(); ite < cmesh.end(); ++ite){
         for (size_t i = 0; i < (*ite).cloud->points.size(); i++){
             manual->position((*ite).cloud->points[i].x, (*ite).cloud->points[i].y, (*ite).cloud->points[i].z);
@@ -97,15 +100,17 @@ void TutorialApplication::createScene(void)
             // Add triangle facing one way
             for (size_t j = 0; j < (*ite).mesh.polygons[i].vertices.size(); ++j)
             {
-                manual->index((*ite).mesh.polygons[i].vertices[j]);
+                manual->index((*ite).mesh.polygons[i].vertices[j] + pic);
             }
             // Add same triangles facing the other way
             for (size_t j = (*ite).mesh.polygons[i].vertices.size(); j-- > 0; )
             {
-                manual->index((*ite).mesh.polygons[i].vertices[j]);
+                manual->index((*ite).mesh.polygons[i].vertices[j] + pic);
             }
         }
+        pic += (*ite).cloud->points.size();
     }
+    std::cout << "cmesh object size: " << cmesh.size()  << std::endl;
      
     // tell Ogre, your definition has finished
     manual->end();
@@ -130,6 +135,7 @@ void TutorialApplication::loadParams(){
     nh.param<double>("SVVoxelResolution", SVVoxelResolution_, 0.1);
     nh.param<double>("SVSeedResolution", SVSeedResolution_, 0.3);
     nh.param<double>("RANSACDistanceThreshold", RANSACDistanceThreshold_, 0.04);
+    nh.param<double>("VoxelLeafSize", VoxelLeafSize_, 0.02);
 }
 
 #ifdef __cplusplus

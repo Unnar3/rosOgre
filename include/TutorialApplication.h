@@ -29,7 +29,7 @@ class TutorialApplication : public BaseApplication
 {
     // Parameters
     std::string configPath_, cloudPath_, savePath_;
-    double SVVoxelResolution_, SVSeedResolution_, RANSACDistanceThreshold_;
+    double SVVoxelResolution_, SVSeedResolution_, RANSACDistanceThreshold_, VoxelLeafSize_;
 
     PointCloudT::Ptr baseCloud_;
 

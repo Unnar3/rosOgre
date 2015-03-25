@@ -1,9 +1,10 @@
 {
 printParameters         : true,
 savePath                : "/home/unnar/catkin_ws/src/rosOgre/run_from/",
-cloudPath               : "/home/unnar/catkin_ws/src/Metarooms/room_2/complete_cloud.pcd",
+cloudPath               : "/home/unnar/catkin_ws/src/Metarooms/room_2/intermediate_cloud0035.pcd",
 configPath              : "/home/unnar/catkin_ws/src/rosOgre/dist/bin/",
 SVVoxelResolution       : 0.05,
 SVSeedResolution        : 0.15,
-RANSACDistanceThreshold : 0.1,
+RANSACDistanceThreshold : 0.02,
+VoxelLeafSize           : 0.01,
 }

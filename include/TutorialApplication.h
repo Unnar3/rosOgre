@@ -29,8 +29,11 @@ class TutorialApplication : public BaseApplication
 {
     // Parameters
     std::string configPath_, cloudPath_, savePath_;
-    double SVVoxelResolution_, SVSeedResolution_, RANSACDistanceThreshold_, VoxelLeafSize_;
-
+    double SVVoxelResolution_, SVSeedResolution_, SVColorImportance_, SVSpatialImportance_;
+    double RANSACDistanceThreshold_, VoxelLeafSize_; int RANSACMinInliers_;
+    double GP3SearchRad_, GP3Mu_, GP3MaxNearestNeighbours_, GP3Ksearch_;
+    double RWHullMaxDist_;
+    bool simplifyHulls_;
     PointCloudT::Ptr baseCloud_;
 
     ros::NodeHandle nh;

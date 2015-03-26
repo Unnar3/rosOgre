@@ -72,12 +72,26 @@ void TutorialApplication::createScene(void)
     cmprs.setVoxelLeafSize(VoxelLeafSize_);
     cmprs.setSVVoxelResolution(SVVoxelResolution_);
     cmprs.setSVSeedResolution(SVSeedResolution_);
+    cmprs.setSVColorImportance(SVColorImportance_);
+    cmprs.setSVSpatialImportance(SVSpatialImportance_);
     cmprs.setRANSACDistanceThreshold(RANSACDistanceThreshold_);
+    cmprs.setRANSACMinInliers(RANSACMinInliers_);
+    cmprs.setSimplifyHulls(simplifyHulls_);
+    cmprs.setGP3SearchRad(GP3SearchRad_);
+    cmprs.setGP3Mu(GP3Mu_);
+    cmprs.setGP3MaxNearestNeighbours(GP3MaxNearestNeighbours_);
+    cmprs.setGP3Ksearch(GP3Ksearch_);
+    cmprs.setRWHullMaxDist(RWHullMaxDist_);
+    
     cmprs.triangulatePlanes();
     cmesh = cmprs.returnCloudMesh();
-    pcl::io::savePCDFileASCII (savePath_+"cmesh0.pcd", *cmesh[0].cloud);
-    pcl::io::savePCDFileASCII (savePath_+"cmesh1.pcd", *cmesh[1].cloud);
-    pcl::io::savePCDFileASCII (savePath_+"cmesh2.pcd", *cmesh[2].cloud);
+
+    PointCloudT::Ptr final_cloud (new PointCloudT ());
+    for (size_t i = 0; i < cmesh.size(); ++i){
+        *final_cloud += *cmesh.at(i).cloud;
+    }
+
+    pcl::io::savePCDFileASCII (savePath_+"final_cloud.pcd", *final_cloud);
     std::cout << "Creating manual object." << std::endl;
 
     // Create manual Object from the triangulation
@@ -134,8 +148,17 @@ void TutorialApplication::loadParams(){
     nh.param<std::string>("savePath", savePath_, "./");
     nh.param<double>("SVVoxelResolution", SVVoxelResolution_, 0.1);
     nh.param<double>("SVSeedResolution", SVSeedResolution_, 0.3);
+    nh.param<double>("SVColorImportance", SVColorImportance_, 1.0);
+    nh.param<double>("SVSpatialImportance", SVSpatialImportance_, 0.01);
     nh.param<double>("RANSACDistanceThreshold", RANSACDistanceThreshold_, 0.04);
+    nh.param<int>("RANSACMinInliers", RANSACMinInliers_, 200);
     nh.param<double>("VoxelLeafSize", VoxelLeafSize_, 0.02);
+    nh.param<double>("GP3SearchRad", GP3SearchRad_, 0.3); 
+    nh.param<double>("GP3Mu", GP3Mu_, 2.5);
+    nh.param<double>("GP3MaxNearestNeighbours", GP3MaxNearestNeighbours_, 100);
+    nh.param<double>("GP3Ksearch", GP3Ksearch_, 20);
+    nh.param<double>("RWHullMaxDist", RWHullMaxDist_, 0.3);
+    nh.param<bool>("simplifyHulls", simplifyHulls_, true);
 }
 
 #ifdef __cplusplus

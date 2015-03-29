@@ -66,6 +66,8 @@ void TutorialApplication::createScene(void)
 
     // Triangulate the cloud.
     std::cout << "Triangulation started" << std::endl;
+    std::cout << "SVColorImportance: " << SVColorImportance_ << std::endl;
+    std::cout << "SVSpatialImportance: " << SVSpatialImportance_ << std::endl;
     EXX::compression cmprs;
     std::vector<EXX::cloudMesh> cmesh;
     cmprs.setInputCloud(baseCloud_);
@@ -84,6 +86,25 @@ void TutorialApplication::createScene(void)
     cmprs.setRWHullMaxDist(RWHullMaxDist_);
     
     cmprs.triangulatePlanes();
+
+    // pcl::PointCloud< pcl::PointXYZRGB>::Ptr test_vec (new pcl::PointCloud< pcl::PointXYZRGB>());
+    // std::vector<pcl::PointCloud< pcl::PointXYZRGB>::Ptr > vec = cmprs.returnSuperVoxelPlanesTest();
+    // for (size_t i = 0; i < vec.size(); ++i){
+    //     *test_vec += *vec.at(i);
+    // }
+    // pcl::io::savePCDF
+    // ileASCII (savePath_+"super_voxelized_cloud.pcd", *test_vec);
+
+    std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::Ptr > test = cmprs.returnSuperVoxelPlanesTestö();
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_test (new pcl::PointCloud<pcl::PointXYZRGBA> ());
+    for (size_t i = 0; i < test.size(); ++i){
+        *cloud_test += *test.at(i);
+    }
+    pcl::io::savePCDFileASCII (savePath_+"super_voxelized_centroid_cloud.pcd", *cloud_test);
+
+
+    // std::cout << "centroid: " << test.size() << ",  colored: " << vec.size()  << std::endl;
+
     cmesh = cmprs.returnCloudMesh();
 
     PointCloudT::Ptr final_cloud (new PointCloudT ());

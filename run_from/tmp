@@ -1,0 +1,12 @@
+[ 20%] Building CXX object exx-compression/CMakeFiles/compression.dir/src/compression.cpp.o
+Base path: /home/unnar/catkin_ws
+Source space: /home/unnar/catkin_ws/src
+Build space: /home/unnar/catkin_ws/build
+Devel space: /home/unnar/catkin_ws/devel
+Install space: /home/unnar/catkin_ws/install
+####
+#### Running command: "make cmake_check_build_system" in "/home/unnar/catkin_ws/build"
+####
+####
+#### Running command: "make -j2 -l2" in "/home/unnar/catkin_ws/build"
+####

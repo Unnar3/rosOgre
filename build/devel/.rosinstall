@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/unnar/catkin_ws/src/rosOgre/build/devel/setup.sh

@@ -95,7 +95,7 @@ void TutorialApplication::createScene(void)
     // pcl::io::savePCDF
     // ileASCII (savePath_+"super_voxelized_cloud.pcd", *test_vec);
 
-    std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::Ptr > test = cmprs.returnSuperVoxelPlanesTestö();
+    std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::Ptr > test = cmprs.returnSuperVoxelPlanes();
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_test (new pcl::PointCloud<pcl::PointXYZRGBA> ());
     for (size_t i = 0; i < test.size(); ++i){
         *cloud_test += *test.at(i);

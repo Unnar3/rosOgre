@@ -69,59 +69,78 @@ void TutorialApplication::createScene(void)
     std::cout << "SVColorImportance: " << SVColorImportance_ << std::endl;
     std::cout << "SVSpatialImportance: " << SVSpatialImportance_ << std::endl;
     EXX::compression cmprs;
-    std::vector<EXX::cloudMesh> cmesh;
-    cmprs.setInputCloud(baseCloud_);
     cmprs.setVoxelLeafSize(VoxelLeafSize_);
     cmprs.setSVVoxelResolution(SVVoxelResolution_);
     cmprs.setSVSeedResolution(SVSeedResolution_);
-    cmprs.setSVColorImportance(SVColorImportance_);
-    cmprs.setSVSpatialImportance(SVSpatialImportance_);
+    // cmprs.setSVColorImportance(SVColorImportance_);
+    // cmprs.setSVSpatialImportance(SVSpatialImportance_);
     cmprs.setRANSACDistanceThreshold(RANSACDistanceThreshold_);
     cmprs.setRANSACMinInliers(RANSACMinInliers_);
-    cmprs.setSimplifyHulls(simplifyHulls_);
+    // cmprs.setSimplifyHulls(simplifyHulls_);
     cmprs.setGP3SearchRad(GP3SearchRad_);
     cmprs.setGP3Mu(GP3Mu_);
     cmprs.setGP3MaxNearestNeighbours(GP3MaxNearestNeighbours_);
     cmprs.setGP3Ksearch(GP3Ksearch_);
     cmprs.setRWHullMaxDist(RWHullMaxDist_);
+    cmprs.setECClusterTolerance(ECClusterTolerance_);
+    cmprs.setECMinClusterSize(ECMinClusterSize_);
+
     
-    cmprs.triangulatePlanes();
+    PointCloudT::Ptr voxel_cloud (new PointCloudT ());
+    EXX::planesAndCoeffs pac;
+    std::vector<PointCloudT::Ptr> c_planes;
+    std::vector<PointCloudT::Ptr> hulls;
+    std::vector<PointCloudT::Ptr> simplified_hulls;
+    std::vector<PointCloudT::Ptr> super_planes;
+    std::vector<EXX::cloudMesh> cmesh;
+    clock_t t1,t2,t3,t4,t5,t6,t7,t8,t9;
+    t1=clock();
+    cmprs.voxelGridFilter(baseCloud_, voxel_cloud);
+    t2=clock();
+    cmprs.extractPlanesRANSAC(voxel_cloud, &pac);
+    t3=clock();
+    cmprs.projectToPlane(&pac);
+    t4=clock();
+    cmprs.euclideanClusterPlanes(&pac.cloud, &c_planes);
+    t5=clock();
+    cmprs.planeToConcaveHull(&c_planes, &hulls);
+    t6=clock();
+    cmprs.reumannWitkamLineSimplification( &hulls, &simplified_hulls);
+    t7=clock();
+    cmprs.superVoxelClustering(&c_planes, &super_planes);
+    t8=clock();
+    cmprs.greedyProjectionTriangulationPlanes(voxel_cloud, &super_planes, &simplified_hulls, &cmesh);
+    t9=clock();
 
-    // pcl::PointCloud< pcl::PointXYZRGB>::Ptr test_vec (new pcl::PointCloud< pcl::PointXYZRGB>());
-    // std::vector<pcl::PointCloud< pcl::PointXYZRGB>::Ptr > vec = cmprs.returnSuperVoxelPlanesTest();
-    // for (size_t i = 0; i < vec.size(); ++i){
-    //     *test_vec += *vec.at(i);
-    // }
-    // pcl::io::savePCDF
-    // ileASCII (savePath_+"super_voxelized_cloud.pcd", *test_vec);
-
-    std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::Ptr > test = cmprs.returnSuperVoxelPlanes();
-    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_test (new pcl::PointCloud<pcl::PointXYZRGBA> ());
-    for (size_t i = 0; i < test.size(); ++i){
-        *cloud_test += *test.at(i);
-    }
-    pcl::io::savePCDFileASCII (savePath_+"super_voxelized_centroid_cloud.pcd", *cloud_test);
-
-
-    // std::cout << "centroid: " << test.size() << ",  colored: " << vec.size()  << std::endl;
-
-    cmesh = cmprs.returnCloudMesh();
-
-    PointCloudT::Ptr final_cloud (new PointCloudT ());
-    for (size_t i = 0; i < cmesh.size(); ++i){
-        *final_cloud += *cmesh.at(i).cloud;
-    }
-
-    pcl::io::savePCDFileASCII (savePath_+"final_cloud.pcd", *final_cloud);
-    std::cout << "Creating manual object." << std::endl;
+    std::cout << "Total time: " << double(t9-t1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "Voxel time: " << double(t2-t1) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "RANSAC time: " << double(t3-t2) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "Project time: " << double(t4-t3) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "EC time: " << double(t5-t4) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "Hull time: " << double(t6-t5) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "Simple Hull time: " << double(t7-t6) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "Super Voxel time: " << double(t8-t7) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "triangulation time: " << double(t9-t8) / CLOCKS_PER_SEC << std::endl;
 
     // Create manual Object from the triangulation
     Ogre::Real r;
     Ogre::Real g;
     Ogre::Real b;
+    
+    PointCloudT::Ptr tmp_cloud (new PointCloudT ());
+    for (int i = 0; i < cmesh.size(); ++i){
+        *tmp_cloud += *cmesh[i].cloud;
+        std::cout << "printing" << std::endl;
+    }
+
+    pcl::io::savePCDFileASCII (savePath_ + "final_cloud.pcd", *tmp_cloud);
 
     int pic = 0;
+    // int r, g, b;
     for (std::vector<EXX::cloudMesh>::iterator ite = cmesh.begin(); ite < cmesh.end(); ++ite){
+        // r = rand () % 255;
+        // g = rand () % 255;
+        // b = rand () % 255;
         for (size_t i = 0; i < (*ite).cloud->points.size(); i++){
             manual->position((*ite).cloud->points[i].x, (*ite).cloud->points[i].y, (*ite).cloud->points[i].z);
 
@@ -180,6 +199,8 @@ void TutorialApplication::loadParams(){
     nh.param<double>("GP3Ksearch", GP3Ksearch_, 20);
     nh.param<double>("RWHullMaxDist", RWHullMaxDist_, 0.3);
     nh.param<bool>("simplifyHulls", simplifyHulls_, true);
+    nh.param<double>( "ECClusterTolerance", ECClusterTolerance_, 0.05);
+    nh.param<int>( "ECMinClusterSize", ECMinClusterSize_, 100);
 }
 
 #ifdef __cplusplus

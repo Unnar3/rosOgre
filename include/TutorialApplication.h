@@ -34,6 +34,8 @@ class TutorialApplication : public BaseApplication
     double GP3SearchRad_, GP3Mu_, GP3MaxNearestNeighbours_, GP3Ksearch_;
     double RWHullMaxDist_;
     bool simplifyHulls_;
+    double ECClusterTolerance_;
+    int ECMinClusterSize_;
     PointCloudT::Ptr baseCloud_;
 
     ros::NodeHandle nh;

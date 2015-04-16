@@ -101,7 +101,8 @@ void TutorialApplication::createScene(void)
     t3=clock();
     cmprs.projectToPlane(&pac);
     t4=clock();
-    cmprs.euclideanClusterPlanes(&pac.cloud, &c_planes);
+    std::vector<int> normalInd;
+    cmprs.euclideanClusterPlanes(&pac.cloud, &c_planes, &normalInd);
     t5=clock();
     cmprs.planeToConcaveHull(&c_planes, &hulls);
     t6=clock();

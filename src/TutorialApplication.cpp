@@ -137,18 +137,18 @@ void TutorialApplication::createScene(void)
     pcl::io::savePCDFileASCII (savePath_ + "final_cloud.pcd", *tmp_cloud);
 
     int pic = 0;
-    int r, g, b;
+    Ogre::Real r, g, b;
     for (std::vector<EXX::cloudMesh>::iterator ite = cmesh.begin(); ite < cmesh.end()-1; ++ite){
-        r = rand () % 255;
-        g = rand () % 255;
-        b = rand () % 255;
+        // r = rand () % 255;
+        // g = rand () % 255;
+        // b = rand () % 255;
         for (size_t i = 0; i < (*ite).cloud->points.size(); i++){
             manual->position((*ite).cloud->points[i].x, (*ite).cloud->points[i].y, (*ite).cloud->points[i].z);
 
             // std::cout << cloud->points[i].x << " " << cloud->points[i].y << " " << cloud->points[i].z << std::endl;
-            // r = (Ogre::Real)(*ite).cloud->points[i].r / (Ogre::Real)255;
-            // g = (Ogre::Real)(*ite).cloud->points[i].g / (Ogre::Real)255;
-            // b = (Ogre::Real)(*ite).cloud->points[i].b / (Ogre::Real)255;
+            r = (Ogre::Real)(*ite).cloud->points[i].r / (Ogre::Real)255;
+            g = (Ogre::Real)(*ite).cloud->points[i].g / (Ogre::Real)255;
+            b = (Ogre::Real)(*ite).cloud->points[i].b / (Ogre::Real)255;
             manual->colour(r, g, b);
         }
         for (size_t i = 0; i < (*ite).mesh.polygons.size(); ++i){

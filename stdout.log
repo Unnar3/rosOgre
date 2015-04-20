@@ -1,0 +1,39 @@
+[  2%] Built target features
+[ 11%] Built target metaroom_xml_parser
+[ 20%] [ 20%] Built target primitive_core
+Built target std_msgs_generate_messages_cpp
+[ 20%] Built target geometry_msgs_generate_messages_cpp
+[ 20%] Built target _primitive_extraction_generate_messages_check_deps_Primitive
+[ 20%] Built target sensor_msgs_generate_messages_cpp
+[ 20%] Built target sensor_msgs_generate_messages_py
+[ 20%] [ 20%] [ 20%] [ 20%] Built target _primitive_extraction_generate_messages_check_deps_PrimitiveArray
+Built target _primitive_extraction_generate_messages_check_deps_ExtractPrimitives
+Built target geometry_msgs_generate_messages_py
+[ 20%] Built target std_msgs_generate_messages_lisp
+[ 20%] [ 20%] Built target std_msgs_generate_messages_py
+Built target geometry_msgs_generate_messages_lisp
+[ 20%] Built target sensor_msgs_generate_messages_lisp
+[ 23%] Built target load_multiple_files
+[ 26%] Built target compression
+[ 29%] Built target load_single_file
+[ 41%] Built target primitive_extraction_generate_messages_cpp
+[ 50%] Built target primitive_shapes
+[ 67%] Built target primitive_extraction_generate_messages_py
+Built target primitive_extraction_generate_messages_lisp
+[ 82%] Built target test_extraction
+[ 91%] Built target OgreApp
+[ 94%] [ 94%] [ 97%] Building CXX object exx_wall_extraction/CMakeFiles/plane_test.dir/src/plane_test.cpp.o
+Built target extraction
+xtraction_generate_messages
+[100%] Built target primitives_to_markers
+Base path: /home/unnar/catkin_ws
+Source space: /home/unnar/catkin_ws/src
+Build space: /home/unnar/catkin_ws/build
+Devel space: /home/unnar/catkin_ws/devel
+Install space: /home/unnar/catkin_ws/install
+####
+#### Running command: "make cmake_check_build_system" in "/home/unnar/catkin_ws/build"
+####
+####
+#### Running command: "make -j4 -l4" in "/home/unnar/catkin_ws/build"
+####

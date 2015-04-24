@@ -35,6 +35,7 @@ class TutorialApplication : public BaseApplication
     double RWHullMaxDist_;
     bool simplifyHulls_;
     double ECClusterTolerance_;
+    double hullAlpha_;
     int ECMinClusterSize_;
     PointCloudT::Ptr baseCloud_;
 

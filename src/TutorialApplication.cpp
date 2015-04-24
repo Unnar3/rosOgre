@@ -44,7 +44,10 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 TutorialApplication::TutorialApplication(void)
 {
     nh = ros::NodeHandle("~");
+    std::cout << "dafuck" << std::endl;
+    PCL_ERROR("Could not load base cloud, baseCloud_ is empty.");
     TutorialApplication::loadParams();
+    std::cout << "dafuck" << std::endl;
     TutorialApplication::setConfigPath(configPath_);
 }
 //-------------------------------------------------------------------------------------
@@ -64,6 +67,7 @@ void TutorialApplication::createScene(void)
     // Create the point cloud.
     TutorialApplication::loadBaseCloud();
 
+    std::cout << "hmmmmmmmmm" << std::endl;
     // Triangulate the cloud.
     std::cout << "Triangulation started" << std::endl;
     std::cout << "SVColorImportance: " << SVColorImportance_ << std::endl;
@@ -84,34 +88,52 @@ void TutorialApplication::createScene(void)
     cmprs.setRWHullMaxDist(RWHullMaxDist_);
     cmprs.setECClusterTolerance(ECClusterTolerance_);
     cmprs.setECMinClusterSize(ECMinClusterSize_);
+    cmprs.setHULLAlpha(hullAlpha_);
 
     
     PointCloudT::Ptr voxel_cloud (new PointCloudT ());
     EXX::planesAndCoeffs pac;
+    std::vector<EXX::densityDescriptor> dDesc;;
     std::vector<PointCloudT::Ptr> c_planes;
     std::vector<PointCloudT::Ptr> hulls;
     std::vector<PointCloudT::Ptr> simplified_hulls;
     std::vector<PointCloudT::Ptr> super_planes;
     std::vector<EXX::cloudMesh> cmesh;
-    clock_t t1,t2,t3,t4,t5,t6,t7,t8,t9;
+    clock_t t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
     t1=clock();
     cmprs.voxelGridFilter(baseCloud_, voxel_cloud);
     t2=clock();
     cmprs.extractPlanesRANSAC(voxel_cloud, &pac);
     t3=clock();
-    cmprs.projectToPlane(&pac);
+    // cmprs.projectToPlane(&pac);
     t4=clock();
     std::vector<int> normalInd;
     cmprs.euclideanClusterPlanes(&pac.cloud, &c_planes, &normalInd);
     t5=clock();
     cmprs.planeToConcaveHull(&c_planes, &hulls);
+    // cmprs.getOBB( hulls, obb );
+    // 
+    cmprs.getPlaneDensity( c_planes, hulls, dDesc);
     t6=clock();
-    cmprs.reumannWitkamLineSimplification( &hulls, &simplified_hulls);
+    cmprs.reumannWitkamLineSimplification( &hulls, &simplified_hulls, dDesc);
     t7=clock();
-    cmprs.superVoxelClustering(&c_planes, &super_planes);
+    std::cout << "hmmm" << std::endl;
+    cmprs.superVoxelClustering(&c_planes, &super_planes, dDesc);
+    
+    std::cout << "hmm2" << std::endl;
     t8=clock();
-    cmprs.greedyProjectionTriangulationPlanes(voxel_cloud, &super_planes, &simplified_hulls, &cmesh);
+    std::cout << "change hull color" << std::endl;
+    for ( size_t i = 0; i < simplified_hulls.size(); ++i){
+        for ( size_t j = 0; j < simplified_hulls.at(i)->points.size(); ++j){
+            simplified_hulls.at(i)->points[j].r = 255;
+            simplified_hulls.at(i)->points[j].g = 255;
+            simplified_hulls.at(i)->points[j].b = 0;
+        }
+    }
+    cmprs.greedyProjectionTriangulationPlanes(voxel_cloud, &super_planes, &simplified_hulls, &cmesh, dDesc);
     t9=clock();
+    cmprs.improveTriangulation(cmesh, super_planes, simplified_hulls);
+    t10 = clock();
 
     std::cout << "Total time: " << double(t9-t1) / CLOCKS_PER_SEC << std::endl;
     std::cout << "Voxel time: " << double(t2-t1) / CLOCKS_PER_SEC << std::endl;
@@ -122,6 +144,7 @@ void TutorialApplication::createScene(void)
     std::cout << "Simple Hull time: " << double(t7-t6) / CLOCKS_PER_SEC << std::endl;
     std::cout << "Super Voxel time: " << double(t8-t7) / CLOCKS_PER_SEC << std::endl;
     std::cout << "triangulation time: " << double(t9-t8) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "improve triangulation time: " << double(t10-t9) / CLOCKS_PER_SEC << std::endl;
 
     // Create manual Object from the triangulation
     // Ogre::Real r;
@@ -131,7 +154,6 @@ void TutorialApplication::createScene(void)
     PointCloudT::Ptr tmp_cloud (new PointCloudT ());
     for (int i = 0; i < cmesh.size()-1; ++i){
         *tmp_cloud += *cmesh[i].cloud;
-        std::cout << "printing" << std::endl;
     }
 
     pcl::io::savePCDFileASCII (savePath_ + "final_cloud.pcd", *tmp_cloud);
@@ -202,6 +224,7 @@ void TutorialApplication::loadParams(){
     nh.param<bool>("simplifyHulls", simplifyHulls_, true);
     nh.param<double>( "ECClusterTolerance", ECClusterTolerance_, 0.05);
     nh.param<int>( "ECMinClusterSize", ECMinClusterSize_, 100);
+    nh.param<double>("hullAlpha", hullAlpha_, 0.1);
 }
 
 #ifdef __cplusplus

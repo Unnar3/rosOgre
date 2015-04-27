@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ros_ogre)
 
+set(CMAKE_CXX_FLAGS "-O4 -g -fPIC -std=c++0x -fpermissive")
+
 ###################################################################
 # ROS related stuff                                               #
 ###################################################################
@@ -13,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 	pcl_conversions
   	pcl_ros
   	exx_compression
+  	ransac_primitives
 )
 
 #add_message_files(FILES

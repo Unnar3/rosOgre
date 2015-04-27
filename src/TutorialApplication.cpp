@@ -17,6 +17,9 @@ This source file is part of the
 
 #include "TutorialApplication.h"
 #include <exx_compression/compression.h>
+#include <params/params.h>
+#include <ransac_primitives/primitive_core.h>
+#include <ransac_primitives/plane_primitive.h>
 #include <iostream>
 #include <pcl/io/vtk_io.h>
 #include <pcl/io/vtk_lib_io.h>
@@ -102,24 +105,69 @@ void TutorialApplication::createScene(void)
     clock_t t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
     t1=clock();
     cmprs.voxelGridFilter(baseCloud_, voxel_cloud);
+    std::cout << "voxel" << std::endl;
     t2=clock();
-    cmprs.extractPlanesRANSAC(voxel_cloud, &pac);
+
+
+    primitive_params params;
+    params.number_disjoint_subsets = 10;
+    params.octree_res              = 1.0;
+    params.normal_neigbourhood     = 0.05;
+    params.inlier_threshold        = 0.04;
+    params.angle_threshold         = 0.5;
+    params.add_threshold           = 0.005;
+    params.min_shape               = voxel_cloud->points.size()*0.000001;
+    params.inlier_min              = params.min_shape;
+    params.connectedness_res       = 0.2;
+    params.distance_threshold      = 0.0;
+
+    //primitive_visualizer<pcl::PointXYZRGB> viewer;
+    std::vector<base_primitive*> primitives = { new plane_primitive() };
+    primitive_extractor<PointT> extractor(voxel_cloud, primitives, params, NULL);
+    std::vector<base_primitive*> extracted;
+    extractor.extract(extracted);
+
+    std::vector<PointCloudT::Ptr> plane_vec;
+    std::vector<int> ind;
+    std::vector<Eigen::Vector4d> normal;
+    Eigen::VectorXd data;
+    for (size_t j = 0; j < extracted.size(); ++j){
+        ind = extracted[j]->supporting_inds;
+        extracted.at(j)->shape_data(data); 
+        normal.push_back(data.segment<4>(0));
+        PointCloudT::Ptr test_cloud (new PointCloudT ());
+        for (size_t i = 0; i < ind.size(); ++i){
+            test_cloud->points.push_back(voxel_cloud->points[ind[i]]);
+        }
+        plane_vec.push_back(test_cloud);
+    }
+
+
+    // cmprs.extractPlanesRANSAC(voxel_cloud, &pac);
+    std::cout << "ransac" << std::endl;
     t3=clock();
+
+    for ( size_t i = 0; i < normal.size(); ++i ){
+        compression::projectToPlaneS( plane_vec[i], normal[i] );
+    }
+
     // cmprs.projectToPlane(&pac);
     t4=clock();
     std::vector<int> normalInd;
-    cmprs.euclideanClusterPlanes(&pac.cloud, &c_planes, &normalInd);
+    // cmprs.euclideanClusterPlanes(&plane_vec, &c_planes, &normalInd);
+    std::cout << "cluster" << std::endl;
     t5=clock();
-    cmprs.planeToConcaveHull(&c_planes, &hulls);
+    cmprs.planeToConcaveHull(&plane_vec, &hulls);
     // cmprs.getOBB( hulls, obb );
     // 
-    cmprs.getPlaneDensity( c_planes, hulls, dDesc);
+    cmprs.getPlaneDensity( plane_vec, hulls, dDesc);
+    std::cout << "concave" << std::endl;
     t6=clock();
     cmprs.reumannWitkamLineSimplification( &hulls, &simplified_hulls, dDesc);
+    std::cout << "simpl" << std::endl;
     t7=clock();
     std::cout << "hmmm" << std::endl;
-    cmprs.superVoxelClustering(&c_planes, &super_planes, dDesc);
-    
+    cmprs.superVoxelClustering(&plane_vec, &super_planes, dDesc);
     std::cout << "hmm2" << std::endl;
     t8=clock();
     std::cout << "change hull color" << std::endl;
@@ -132,7 +180,9 @@ void TutorialApplication::createScene(void)
     }
     cmprs.greedyProjectionTriangulationPlanes(voxel_cloud, &super_planes, &simplified_hulls, &cmesh, dDesc);
     t9=clock();
+    std::cout << "tri" << std::endl;
     cmprs.improveTriangulation(cmesh, super_planes, simplified_hulls);
+    std::cout << "impr tri" << std::endl;
     t10 = clock();
 
     std::cout << "Total time: " << double(t9-t1) / CLOCKS_PER_SEC << std::endl;
@@ -188,10 +238,8 @@ void TutorialApplication::createScene(void)
         pic += (*ite).cloud->points.size();
     }
     std::cout << "cmesh object size: " << cmesh.size()  << std::endl;
-     
     // tell Ogre, your definition has finished
-    manual->end();
-     
+    manual->end();  
     // add ManualObject to the RootSceneNode (so it will be visible)
     mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(manual);
 }
@@ -206,7 +254,8 @@ void TutorialApplication::loadBaseCloud(){
 }
 
 void TutorialApplication::loadParams(){
-    nh.param<std::string>("configPath", configPath_, "./");
+    // nh.param<std::string>("configPath", configPath_, "./");
+    configPath_ = params::load<std::string>("configPath", nh);
     nh.param<std::string>("cloudPath", cloudPath_, "./");
     nh.param<std::string>("savePath", savePath_, "./");
     nh.param<double>("SVVoxelResolution", SVVoxelResolution_, 0.1);

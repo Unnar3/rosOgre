@@ -1,5 +1,5 @@
 <launch>
-	<node pkg="ros_ogre" type="OgreApp" name="OgreApp" output="screen">
+	<node pkg="ros_ogre" type="OgreApp" name="OgreApp" clear_params="true" output="screen">
 		<rosparam file="$(find ros_ogre)/parameters/parameters.yaml" command="load"/>
 	</node>
 </launch>

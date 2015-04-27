@@ -42,7 +42,11 @@ class TutorialApplication : public BaseApplication
     int ECMinClusterSize_;
     PointCloudT::Ptr baseCloud_;
 
+    bool first;
+    int count;
+
     ros::NodeHandle nh;
+    ros::Subscriber point_cloud_subscriber;
 public:
     TutorialApplication(void);
     virtual ~TutorialApplication(void);
@@ -51,6 +55,8 @@ protected:
     virtual void createScene(void);
     virtual void loadBaseCloud();
     virtual void loadParams();
+    void updateScene(PointCloudT::Ptr cloud);
+    void point_cloud_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
 
 };
 

@@ -46,12 +46,16 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 //-------------------------------------------------------------------------------------
 TutorialApplication::TutorialApplication(void)
 {
+    first = true;
+    count = 0;
     nh = ros::NodeHandle("~");
     std::cout << "dafuck" << std::endl;
     PCL_ERROR("Could not load base cloud, baseCloud_ is empty.");
     TutorialApplication::loadParams();
     std::cout << "dafuck" << std::endl;
     TutorialApplication::setConfigPath(configPath_);
+
+    point_cloud_subscriber   = nh.subscribe(params::load<std::string>("TOPIC_POINT_CLOUD", nh), 1, &TutorialApplication::point_cloud_callback, this);
 }
 //-------------------------------------------------------------------------------------
 TutorialApplication::~TutorialApplication(void)
@@ -59,22 +63,23 @@ TutorialApplication::~TutorialApplication(void)
 }
 
 //-------------------------------------------------------------------------------------
-void TutorialApplication::createScene(void)
-{
+void TutorialApplication::updateScene(PointCloudT::Ptr cloud){
+    
+    std::cout << "updateScene" << std::endl;
+
     // create ManualObject
+    // if ( mSceneMgr->hasManualObject("manual") ){
+    //     mSceneMgr->destroyManualObject("manual");
+    // }
+
     Ogre::ManualObject* manual = mSceneMgr->createManualObject("manual");
     
     // specify the material (by name) and rendering type
     manual->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
     // Create the point cloud.
-    TutorialApplication::loadBaseCloud();
-
-    std::cout << "hmmmmmmmmm" << std::endl;
+    // TutorialApplication::loadBaseCloud();
     // Triangulate the cloud.
-    std::cout << "Triangulation started" << std::endl;
-    std::cout << "SVColorImportance: " << SVColorImportance_ << std::endl;
-    std::cout << "SVSpatialImportance: " << SVSpatialImportance_ << std::endl;
     EXX::compression cmprs;
     cmprs.setVoxelLeafSize(VoxelLeafSize_);
     cmprs.setSVVoxelResolution(SVVoxelResolution_);
@@ -102,11 +107,7 @@ void TutorialApplication::createScene(void)
     std::vector<PointCloudT::Ptr> simplified_hulls;
     std::vector<PointCloudT::Ptr> super_planes;
     std::vector<EXX::cloudMesh> cmesh;
-    clock_t t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
-    t1=clock();
-    cmprs.voxelGridFilter(baseCloud_, voxel_cloud);
-    std::cout << "voxel" << std::endl;
-    t2=clock();
+    cmprs.voxelGridFilter(cloud, voxel_cloud);
 
 
     primitive_params params;
@@ -142,59 +143,31 @@ void TutorialApplication::createScene(void)
         plane_vec.push_back(test_cloud);
     }
 
-
     // cmprs.extractPlanesRANSAC(voxel_cloud, &pac);
-    std::cout << "ransac" << std::endl;
-    t3=clock();
-
     for ( size_t i = 0; i < normal.size(); ++i ){
         compression::projectToPlaneS( plane_vec[i], normal[i] );
     }
 
     // cmprs.projectToPlane(&pac);
-    t4=clock();
     std::vector<int> normalInd;
     // cmprs.euclideanClusterPlanes(&plane_vec, &c_planes, &normalInd);
-    std::cout << "cluster" << std::endl;
-    t5=clock();
     cmprs.planeToConcaveHull(&plane_vec, &hulls);
     // cmprs.getOBB( hulls, obb );
     // 
     cmprs.getPlaneDensity( plane_vec, hulls, dDesc);
-    std::cout << "concave" << std::endl;
-    t6=clock();
     cmprs.reumannWitkamLineSimplification( &hulls, &simplified_hulls, dDesc);
-    std::cout << "simpl" << std::endl;
-    t7=clock();
-    std::cout << "hmmm" << std::endl;
     cmprs.superVoxelClustering(&plane_vec, &super_planes, dDesc);
-    std::cout << "hmm2" << std::endl;
-    t8=clock();
-    std::cout << "change hull color" << std::endl;
-    for ( size_t i = 0; i < simplified_hulls.size(); ++i){
-        for ( size_t j = 0; j < simplified_hulls.at(i)->points.size(); ++j){
-            simplified_hulls.at(i)->points[j].r = 255;
-            simplified_hulls.at(i)->points[j].g = 255;
-            simplified_hulls.at(i)->points[j].b = 0;
-        }
-    }
+    // for ( size_t i = 0; i < simplified_hulls.size(); ++i){
+    //     for ( size_t j = 0; j < simplified_hulls.at(i)->points.size(); ++j){
+    //         simplified_hulls.at(i)->points[j].r = 255;
+    //         simplified_hulls.at(i)->points[j].g = 255;
+    //         simplified_hulls.at(i)->points[j].b = 0;
+    //     }
+    // }
     cmprs.greedyProjectionTriangulationPlanes(voxel_cloud, &super_planes, &simplified_hulls, &cmesh, dDesc);
-    t9=clock();
     std::cout << "tri" << std::endl;
     cmprs.improveTriangulation(cmesh, super_planes, simplified_hulls);
     std::cout << "impr tri" << std::endl;
-    t10 = clock();
-
-    std::cout << "Total time: " << double(t9-t1) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "Voxel time: " << double(t2-t1) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "RANSAC time: " << double(t3-t2) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "Project time: " << double(t4-t3) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "EC time: " << double(t5-t4) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "Hull time: " << double(t6-t5) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "Simple Hull time: " << double(t7-t6) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "Super Voxel time: " << double(t8-t7) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "triangulation time: " << double(t9-t8) / CLOCKS_PER_SEC << std::endl;
-    std::cout << "improve triangulation time: " << double(t10-t9) / CLOCKS_PER_SEC << std::endl;
 
     // Create manual Object from the triangulation
     // Ogre::Real r;
@@ -206,8 +179,6 @@ void TutorialApplication::createScene(void)
         *tmp_cloud += *cmesh[i].cloud;
     }
 
-    pcl::io::savePCDFileASCII (savePath_ + "final_cloud.pcd", *tmp_cloud);
-
     int pic = 0;
     Ogre::Real r, g, b;
     for (std::vector<EXX::cloudMesh>::iterator ite = cmesh.begin(); ite < cmesh.end()-1; ++ite){
@@ -215,7 +186,7 @@ void TutorialApplication::createScene(void)
         // g = rand () % 255;
         // b = rand () % 255;
         for (size_t i = 0; i < (*ite).cloud->points.size(); i++){
-            manual->position((*ite).cloud->points[i].x, (*ite).cloud->points[i].y, (*ite).cloud->points[i].z);
+            manual->position((*ite).cloud->points[i].x, -(*ite).cloud->points[i].y, -(*ite).cloud->points[i].z);
 
             // std::cout << cloud->points[i].x << " " << cloud->points[i].y << " " << cloud->points[i].z << std::endl;
             r = (Ogre::Real)(*ite).cloud->points[i].r / (Ogre::Real)255;
@@ -242,7 +213,10 @@ void TutorialApplication::createScene(void)
     manual->end();  
     // add ManualObject to the RootSceneNode (so it will be visible)
     mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(manual);
+    std::cout << "end" << std::endl;
 }
+
+void TutorialApplication::createScene(void){}
 
 void TutorialApplication::loadBaseCloud(){
     baseCloud_ = PointCloudT::Ptr (new PointCloudT ());
@@ -251,6 +225,13 @@ void TutorialApplication::loadBaseCloud(){
     } else {
         std::cout << "baseCloud_ loaded;" << std::endl;
     }
+}
+
+void TutorialApplication::point_cloud_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
+{
+    PointCloudT::Ptr cloud (new PointCloudT ());
+    pcl::fromROSMsg (*cloud_msg, *cloud);
+    TutorialApplication::updateScene(cloud);
 }
 
 void TutorialApplication::loadParams(){
@@ -282,10 +263,10 @@ extern "C" {
     int main(int argc, char *argv[])
     {
         ros::init(argc, argv, "rosOgre_node");
-        
+        int o = 0;
         // Create application object
         TutorialApplication app;
-        ros::Rate loop_rate(10);
+        ros::Rate loop_rate(0.2);
 
         try {
             app.go();
@@ -293,6 +274,23 @@ extern "C" {
             std::cerr << "An exception has occured: " <<
                 e.getFullDescription().c_str() << std::endl;
         }
+
+        ros::Time begin;
+        ros::Duration timeout(1.0);
+        while(ros::ok()) {
+            if ( o > 100 ){
+                break;
+            }
+            begin = ros::Time::now();
+            ros::spinOnce();
+            while (ros::Time::now() - begin < timeout){
+                app.renderOneFrame();
+            }
+            o++;
+            //loop_rate.sleep();
+        }
+
+        app.destroyScene();
 
         return 0;
     }

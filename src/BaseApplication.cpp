@@ -206,10 +206,14 @@ void BaseApplication::go(void)
     if (!setup())
         return;
 
-    mRoot->startRendering();
+    //mRoot->startRendering();
 
     // clean up
-    destroyScene();
+    //destroyScene();
+}
+
+void BaseApplication::renderOneFrame(void){
+    mRoot->renderOneFrame();
 }
 
 void BaseApplication::setConfigPath(std::string config_path){
@@ -238,7 +242,7 @@ bool BaseApplication::setup(void)
     loadResources();
 
     // Create the scene
-    createScene();
+    //createScene();
 
     createFrameListener();
 

@@ -101,7 +101,7 @@ void TutorialApplication::updateScene(PointCloudT::Ptr cloud){
     
     PointCloudT::Ptr voxel_cloud (new PointCloudT ());
     EXX::planesAndCoeffs pac;
-    std::vector<EXX::densityDescriptor> dDesc;;
+    std::vector<EXX::densityDescriptor> dDesc;
     std::vector<PointCloudT::Ptr> c_planes;
     std::vector<PointCloudT::Ptr> hulls;
     std::vector<PointCloudT::Ptr> simplified_hulls;
@@ -141,7 +141,7 @@ void TutorialApplication::updateScene(PointCloudT::Ptr cloud){
             test_cloud->points.push_back(voxel_cloud->points[ind[i]]);
         }
         plane_vec.push_back(test_cloud);
-    }
+    }   
 
     // cmprs.extractPlanesRANSAC(voxel_cloud, &pac);
     for ( size_t i = 0; i < normal.size(); ++i ){
